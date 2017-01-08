@@ -230,6 +230,10 @@ class FelixIptablesGenerator(FelixPlugin):
         chain = []
         deps = set()
 
+        chain.extend("--append %s "
+                     "--jump firewall-INPUT" %
+                     CHAIN_INPUT)
+
         if hosts_set_name:
             # IP-in-IP enabled, drop any IP-in-IP packets that are not from
             # other Calico hosts.

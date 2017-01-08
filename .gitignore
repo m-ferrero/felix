@@ -21,3 +21,6 @@ version.txt
 bin
 local-utils
 python/version.py
+.project
+.pydevproject
+.settings

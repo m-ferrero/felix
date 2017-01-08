@@ -209,6 +209,7 @@ CHAIN_FROM_PREFIX = FELIX_PREFIX + "from-"
 # Top-level felix chains.
 CHAIN_PREROUTING = FELIX_PREFIX + "PREROUTING"
 CHAIN_POSTROUTING = FELIX_PREFIX + "POSTROUTING"
+CHAIN_FIREWALL_INPUT = FELIX_PREFIX + "firewall-INPUT"
 CHAIN_INPUT = FELIX_PREFIX + "INPUT"
 CHAIN_OUTPUT = FELIX_PREFIX + "OUTPUT"
 CHAIN_FORWARD = FELIX_PREFIX + "FORWARD"
@@ -338,6 +339,9 @@ def install_global_rules(config, filter_updater, nat_updater, ip_version,
     else:
         hosts_set_name = None
 
+    firewall_input_chain, firewall_input_deps = (
+        iptables_generator.filter_firewall_input_chain(ip_version, hosts_set_name)
+    )
     input_chain, input_deps = (
         iptables_generator.filter_input_chain(ip_version, hosts_set_name)
     )
@@ -356,6 +360,7 @@ def install_global_rules(config, filter_updater, nat_updater, ip_version,
 
     filter_updater.rewrite_chains(
         {
+            CHAIN_FIREWALL_INPUT: firewall_input_chain,
             CHAIN_FORWARD: forward_chain,
             CHAIN_INPUT: input_chain,
             CHAIN_OUTPUT: output_chain,
@@ -363,6 +368,7 @@ def install_global_rules(config, filter_updater, nat_updater, ip_version,
             CHAIN_FAILSAFE_OUT: failsafe_out_chain,
         },
         {
+            CHAIN_FIREWALL_INPUT: firewall_input_deps,
             CHAIN_FORWARD: forward_deps,
             CHAIN_INPUT: input_deps,
             CHAIN_OUTPUT: output_deps,
@@ -370,6 +376,7 @@ def install_global_rules(config, filter_updater, nat_updater, ip_version,
             CHAIN_FAILSAFE_OUT: failsafe_out_deps,
         },
         async=False)
+
 
     filter_updater.ensure_rule_inserted(
         "INPUT --jump %s" % CHAIN_INPUT,

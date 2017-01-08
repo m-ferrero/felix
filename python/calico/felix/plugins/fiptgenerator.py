@@ -49,6 +49,7 @@ from calico.felix.profilerules import UnsupportedICMPType
 from calico.felix.frules import (CHAIN_TO_ENDPOINT, CHAIN_FROM_ENDPOINT,
                                  CHAIN_TO_PREFIX, CHAIN_FROM_PREFIX,
                                  CHAIN_PREROUTING, CHAIN_POSTROUTING,
+                                 CHAIN_FIREWALL_INPUT,
                                  CHAIN_INPUT, CHAIN_FORWARD,
                                  FELIX_PREFIX, CHAIN_FIP_DNAT, CHAIN_FIP_SNAT,
                                  CHAIN_TO_IFACE, CHAIN_FROM_IFACE,
@@ -230,9 +231,9 @@ class FelixIptablesGenerator(FelixPlugin):
         chain = []
         deps = set()
 
-        chain.extend("--append %s "
-                     "--jump firewall-INPUT" %
-                     CHAIN_INPUT)
+#        chain.extend("--append %s "
+#                     "--jump firewall-INPUT" %
+#                     CHAIN_INPUT)
 
         if hosts_set_name:
             # IP-in-IP enabled, drop any IP-in-IP packets that are not from
@@ -346,6 +347,30 @@ class FelixIptablesGenerator(FelixPlugin):
                     "--append %s --jump %s" %
                     (CHAIN_INPUT, self.DEFAULT_INPUT_CHAIN_ACTION)
                 )
+
+        return chain, deps
+
+    def filter_firewall_input_chain(self, ip_version, hosts_set_name=None):
+        """
+        Generate the IPv4/IPv6 FILTER felix-firewall-INPUT chains.
+
+        Returns a list of iptables fragments with which to program the
+        firewall-INPUT chain.
+
+        Note that the list returned here should be the complete set of rules
+        required as any existing chain will be overwritten.
+
+        :param ip_version.  Whether this is the IPv4 or IPv6 FILTER table.
+        :returns Tuple: list of rules, set of deps.
+        """
+
+        chain = []
+        deps = set()
+
+        chain.append(
+            "--append %s --jump %s" %
+            (CHAIN_FIREWALL_INPUT, self.DEFAULT_INPUT_CHAIN_ACTION)
+        )
 
         return chain, deps
 

@@ -173,7 +173,7 @@ update-frozen-reqs python/requirements_frozen.txt: python/requirements.txt pytho
 # Build the calico/felix docker image, which contains only Felix.
 .PHONY: calico/felix
 calico/felix: dist/calico-felix/calico-iptables-plugin dist/calico-felix/calico-felix
-	docker build -t calico/felix .
+	docker build -t calico/felix:2.0.0-cognitio .
 
 # Create or rebuild a python virtualenv suitable for developing Python UTs.
 .PHONY: env
